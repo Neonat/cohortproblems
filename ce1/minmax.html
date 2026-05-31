@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>MinMax</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@400;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="minmax.css" />
+  </head>
+  <body>
+    <div class="page">
+      <div class="topbar">
+        <a href="#">Gmail</a>
+        <a href="#">Images</a>
+        <button class="signin">Sign in</button>
+      </div>
+
+      <div class="center">
+        <div class="logo">
+          <span>M</span><span>i</span><span>n</span><span>M</span><span>a</span><span>x</span>
+        </div>
+
+        <div class="search-wrap">
+          <div class="search-box">
+            <input id="textbox1" type="text" placeholder="enter numbers separated by commas" />
+          </div>
+        </div>
+
+        <div class="buttons">
+          <button class="btn-google" id="button1">MinMax Search</button>
+          <button class="btn-google" id="btn-lucky">I'm Feeling Lucky</button>
+        </div>
+
+        <div class="results-area">
+          <p class="error" id="error"></p>
+          <div class="result-row" id="result-row" style="display:none;">
+            <div class="result-card">
+              <div class="result-label">minimum</div>
+              <div class="result-value" id="min">—</div>
+            </div>
+            <div class="result-card">
+              <div class="result-label">maximum</div>
+              <div class="result-value" id="max">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="footer-group">
+          <a href="#">Advertising</a>
+          <a href="#">Business</a>
+        </div>
+        <div class="footer-group">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+        </div>
+      </div>
+    </div>
+    <script src="minmax.js"></script>
+  </body>
+</html>
+
+<!-- 
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="ce1.js"></script>
+    <meta charset="utf-8" />
+    <title>50.003 sample code: Min and Max</title>
+  </head>
+  <body>
+    <div>Your input: <input id="textbox1" type="text" /></div>
+    <div>Min: <span id="min"></span></div>
+    <div>Max: <span id="max"></span></div>
+    <div><button id="button1">Submit</button></div>
+  </body>
+</html> -->

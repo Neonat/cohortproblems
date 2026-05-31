@@ -23,20 +23,20 @@ function gt(a, b) {
     } else {
         return b;
     }
-}   
+}
+
 // input: an array of numbers
 // output: an object containing 'min', with the minimum of the array
 //          and 'max' the maximum of the array.
 function min_max(a) {
+    min = a[0];
+    max = a[0];
     for (let i in a) {
-        min = a[0];
-        max = a[0];
         var n = a[i];
-        lt(n, min);
-        gt(n, max);
+        min = lt(n, min);
+        max = gt(n, max);
     }
-  // TODO: fixme
-  return { min: min, max: max };
+    return { min: min, max: max };
 }
 
 function handleButton1Click() {
@@ -47,14 +47,12 @@ function handleButton1Click() {
   var obj = min_max(numbers(items));
   min.innerHTML = obj["min"];
   max.innerHTML = obj["max"];
-  var span1 = document.getElementById("span1");
-  span1.innerHTML = textbox1.value;
 }
 
 function run() {
   var button1 = document.getElementById("button1");
-    button1.addEventListener("click", handleButton1Click);
-    consolele.log("run");
+  button1.addEventListener("click", handleButton1Click);
+  console.log("run");
 }
 
 document.addEventListener("DOMContentLoaded", run);
