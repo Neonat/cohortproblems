@@ -25,12 +25,6 @@ Implement less than (`lt`) and greater than (`gt`) logic to iteratively check th
 - `lt(n, min)` and `gt(n, max)` were called but their return values were discarded
 - Fix: Assign the results back: `min = lt(n, min)` and `max = gt(n, max)`
 
-### Bug 4: Reference to non-existent element `span1`
-
-- `handleButton1Click()` tried to get an element with id `span1`, which doesn't exist in the HTML
-- This caused a null reference error that crashed the handler silently
-- Fix: Remove those two lines
-
 ## Extra
 
 I want to make the whole page look extra nice. With claude's help, I made the whole thing look like Google Search and implemented some fun elements like false buttons to troll.
@@ -69,3 +63,44 @@ Got too carried away with the extras, so the work was split into two separate fi
 
 - `ce1.html` / `ce1.js` — original plain implementation for submission
 - `minmax.html` / `minmax.css` / `minmax.js` — the fancy Google Search version with all the extras
+
+# Task 2
+
+My friend told me to automate the printing. I want to try that.
+
+Omg doing that took WAY WAY WAY too long. Holy balls!!
+
+![Stack Trace Table]([Stack Trace Table](./StackTable.png))
+
+Here is what I managed to get out of the entire simulator.js run in terminal.
+
+## What is happening?
+
+So basically in the first 6 lines until eof, main() is running. The two promises are created and immediately resolved. Then ev1 and ev2 are registered in the column "event reg". When ev2 emits (line 30 of task2.js), function@26 is added to the column "macro queue". This causes main() to return and the call stack to empty.
+
+After that, the event loop dequeues `function@26(0)` from the macro queue and runs its callback body (lines 27–28), which calls `console.log` and schedules a `.then()` microtask.
+
+The callback returns, the call stack clears, and the microtask drains, calling `foo(data)`, which emits the next event and queues the next macro task. This cycle repeats, incrementing `x` by 1 each time, alternating between ev1 and ev2, until `foo(11)` hits the `x > 10` branch and terminates.
+
+## What gets printed in the console output
+
+```
+data 0 received by ev2
+data 1 received by ev1
+data 2 received by ev2
+data 3 received by ev1
+data 4 received by ev2
+data 5 received by ev1
+data 6 received by ev2
+data 7 received by ev1
+data 8 received by ev2
+data 9 received by ev1
+data 10 received by ev2
+data 11 received by ev1
+```
+
+## DOES IT END?
+
+Yes.
+
+The chain of async callbacks eventually stops when the condition (x > 10) is fulfilled. However, this only happens after the fact, meaning, after 12 cycles, foo(11) is called and in the x>10 branch, resolve() results in no further scheduling. So nothing is added to the queue and the program ends there.
