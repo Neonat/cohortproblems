@@ -70,7 +70,7 @@ My friend told me to automate the printing. I want to try that.
 
 Omg doing that took WAY WAY WAY too long. Holy balls!!
 
-![Stack Trace Table](ce1/task2/StackTable.png)
+![Stack Trace Table](cohortproblems/ce1/task2/StackTable.png)
 
 Here is what I managed to get out of the entire simulator.js run in terminal.
 
