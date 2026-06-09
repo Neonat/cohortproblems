@@ -1,0 +1,150 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.container { padding: 1.5rem 0; }
+.header { font-size: 18px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 1.5rem; }
+.panels { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.5rem; }
+.card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; }
+.card-title { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 12px; font-weight: 500; }
+.row { display: flex; gap: 8px; margin-bottom: 8px; }
+input { flex: 1; min-width: 0; }
+.btn { padding: 0 14px; background: transparent; border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); cursor: pointer; font-size: 13px; color: var(--color-text-primary); white-space: nowrap; }
+.btn:hover { background: var(--color-background-secondary); }
+.btn:active { transform: scale(0.98); }
+.status { font-size: 12px; min-height: 18px; margin-top: 4px; }
+.status.ok { color: var(--color-text-success); }
+.status.err { color: var(--color-text-danger); }
+.org { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1.25rem; background: var(--color-background-secondary); min-height: 120px; }
+.org-title { font-size: 13px; color: var(--color-text-secondary); font-weight: 500; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+.refresh-btn { background: none; border: none; cursor: pointer; color: var(--color-text-secondary); font-size: 14px; padding: 2px 6px; border-radius: var(--border-radius-md); }
+.refresh-btn:hover { background: var(--color-background-primary); }
+.dept-node { background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 10px 14px; margin-bottom: 10px; }
+.dept-label { font-size: 14px; font-weight: 500; color: var(--color-text-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+.dept-badge { font-size: 11px; background: var(--color-background-info); color: var(--color-text-info); border-radius: 99px; padding: 2px 8px; }
+.staff-list { display: flex; flex-wrap: wrap; gap: 6px; padding-left: 8px; border-left: 2px solid var(--color-border-tertiary); margin-left: 4px; }
+.staff-chip { font-size: 12px; background: var(--color-background-secondary); border: 0.5px solid var(--color-border-tertiary); border-radius: 99px; padding: 3px 10px; color: var(--color-text-primary); display: flex; align-items: center; gap: 4px; }
+.staff-chip .sid { color: var(--color-text-secondary); font-size: 11px; }
+.empty { font-size: 13px; color: var(--color-text-tertiary); text-align: center; padding: 2rem; }
+.new-tag { font-size: 10px; background: var(--color-background-success); color: var(--color-text-success); border-radius: 99px; padding: 1px 6px; animation: fadein 0.4s; }
+@keyframes fadein { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+</style>
+
+<div class="container">
+  <h2 class="sr-only">Staff and department org chart dashboard</h2>
+  <div class="header">Org chart dashboard</div>
+
+  <div class="panels">
+    <div class="card">
+      <div class="card-title"><i class="ti ti-building" aria-hidden="true"></i> Add department</div>
+      <div class="row">
+        <input type="text" id="dept-code" placeholder="dept code, e.g. hr" />
+        <button class="btn" onclick="addDept()">Add</button>
+      </div>
+      <div class="status" id="dept-status"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-user-plus" aria-hidden="true"></i> Add staff</div>
+      <div class="row">
+        <input type="text" id="staff-id" placeholder="id" style="max-width:60px" />
+        <input type="text" id="staff-name" placeholder="name" />
+        <input type="text" id="staff-dept" placeholder="dept" style="max-width:70px" />
+        <button class="btn" onclick="addStaff()">Add</button>
+      </div>
+      <div class="status" id="staff-status"></div>
+    </div>
+  </div>
+
+  <div class="org">
+    <div class="org-title">
+      <span>Organisation</span>
+      <button class="refresh-btn" onclick="loadOrg()" title="Refresh"><i class="ti ti-refresh" aria-hidden="true"></i></button>
+    </div>
+    <div id="org-body"><div class="empty">Loading...</div></div>
+  </div>
+</div>
+
+<script>
+const BASE = 'http://localhost:3000';
+let recentlyAdded = { depts: new Set(), staff: new Set() };
+
+async function addDept() {
+  const code = document.getElementById('dept-code').value.trim();
+  const st = document.getElementById('dept-status');
+  if (!code) { st.className = 'status err'; st.textContent = 'Enter a dept code.'; return; }
+  try {
+    const r = await fetch(`${BASE}/dept/add/${encodeURIComponent(code)}`);
+    const d = await r.json();
+    st.className = 'status ok';
+    st.textContent = `Added: ${JSON.stringify(d)}`;
+    recentlyAdded.depts.add(code);
+    document.getElementById('dept-code').value = '';
+    await loadOrg();
+    setTimeout(() => recentlyAdded.depts.delete(code), 3000);
+  } catch(e) {
+    st.className = 'status err';
+    st.textContent = 'Error — is the server running?';
+  }
+}
+
+async function addStaff() {
+  const id = document.getElementById('staff-id').value.trim();
+  const name = document.getElementById('staff-name').value.trim();
+  const dept = document.getElementById('staff-dept').value.trim();
+  const st = document.getElementById('staff-status');
+  if (!id || !name || !dept) { st.className = 'status err'; st.textContent = 'Fill in all fields.'; return; }
+  try {
+    const r = await fetch(`${BASE}/staff/add/${encodeURIComponent(id)}/${encodeURIComponent(name)}/${encodeURIComponent(dept)}`);
+    const d = await r.json();
+    st.className = 'status ok';
+    st.textContent = `Added: ${JSON.stringify(d)}`;
+    recentlyAdded.staff.add(id);
+    document.getElementById('staff-id').value = '';
+    document.getElementById('staff-name').value = '';
+    document.getElementById('staff-dept').value = '';
+    await loadOrg();
+    setTimeout(() => recentlyAdded.staff.delete(id), 3000);
+  } catch(e) {
+    st.className = 'status err';
+    st.textContent = 'Error — is the server running?';
+  }
+}
+
+async function loadOrg() {
+  const body = document.getElementById('org-body');
+  try {
+    const r = await fetch(`${BASE}/dept/all/withstaff/`);
+    const depts = await r.json();
+    if (!depts.length) {
+      body.innerHTML = '<div class="empty">No departments yet. Add one above.</div>';
+      return;
+    }
+    body.innerHTML = depts.map(d => `
+      <div class="dept-node">
+        <div class="dept-label">
+          <i class="ti ti-building" aria-hidden="true"></i>
+          ${d.code}
+          <span class="dept-badge">${d.staffs.length} staff</span>
+          ${recentlyAdded.depts.has(d.code) ? '<span class="new-tag">new</span>' : ''}
+        </div>
+        <div class="staff-list">
+          ${d.staffs.length ? d.staffs.map(s => `
+            <div class="staff-chip">
+              <i class="ti ti-user" aria-hidden="true" style="font-size:12px"></i>
+              ${s.name}
+              <span class="sid">#${s.id}</span>
+              ${recentlyAdded.staff.has(s.id) ? '<span class="new-tag">new</span>' : ''}
+            </div>
+          `).join('') : '<span style="font-size:12px;color:var(--color-text-tertiary)">no staff yet</span>'}
+        </div>
+      </div>
+    `).join('');
+  } catch(e) {
+    body.innerHTML = '<div class="empty">Could not connect to server.</div>';
+  }
+}
+
+loadOrg();
+setInterval(loadOrg, 5000);
+</script>

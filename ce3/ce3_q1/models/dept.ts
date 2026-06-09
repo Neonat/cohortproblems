@@ -4,15 +4,6 @@ import * as staffModel from './staff';
 
 const tableName = 'dept';
 
-export class Dept {
-  code: string;
-  staffs?: any;
-
-  constructor(code: string) {
-    this.code = code;
-  }
-}
-
 export async function sync(): Promise<void> {
   try {
     db.pool.query(`
